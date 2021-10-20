@@ -13,17 +13,21 @@
     </div>
 
     <div class="actions">
-      <div class="timer">{{ task.timer }}</div>
+      <div class="timer">
+        <span v-if="timePassed !== null">{{ formattedTime }} </span>
+        <span v-else>{{ "00:00:00"  }}</span>
+      </div>
+
       <button
           class="btn btn-start"
-          @click="onStartTimer"
+          @click="startTimer"
       >
         Start
       </button>
 
       <button
-          class="btn btn-stop"
-          @click="onPauseTimer"
+          class="btn btn-pause"
+          @click="pauseTimer"
       >
         Pause
       </button>
@@ -35,39 +39,74 @@
 </template>
 
 <script>
-import { TasksCollection } from '../../api/TasksCollection'
+import {TasksCollection} from '../../api/TasksCollection'
+
+function querySelector(s) {
+
+}
 
 export default {
   props: ['task'],
-  data () {
-    return {}
+  data() {
+    return {
+      startTimeTracker: '',
+      pauseTimeTracker: '',
+      timerTask: '',
+      startDate: null,
+      timePassed: null,
+      interval: null
+    }
   },
   computed: {
     taskClassName: function () {
       return this.task.checked ? 'checked' : ''
     },
+    formattedTime: function () {
+      if (this.timePassed) {
+        let durationTask = 0
+        durationTask = Math.abs((this.timePassed / 1000).toFixed(0))
+        let hours = Math.floor(durationTask / 3600) % 24
+        hours = (hours < 10) ? "0" + hours : hours
+
+        let minutes = Math.floor(durationTask / 60) % 60;
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+
+        let seconds = durationTask % 60;
+        seconds = (seconds < 10) ? "0" + seconds : seconds
+
+        return `${hours}:${minutes}:${seconds}`
+      }
+      return 0
+    }
   },
   methods: {
-    toggleChecked () {
+    toggleChecked() {
       // Set the checked property to the opposite of its current value
       TasksCollection.update(this.task._id, {
-        $set: { checked: !this.task.checked },
+        $set: {checked: !this.task.checked},
       })
     },
-    updateThisTask () {
+    updateThisTask() {
       // TasksCollection.update(this.task._id, {
       //   $set: { timer: '00-00-00' }
       // })
     },
-    deleteThisTask () {
+    deleteThisTask() {
       TasksCollection.remove(this.task._id)
     },
-    onStartTimer () {
-      console.log('start')
+    startTimer() {
+      console.log('startTimer')
+      this.startDate = new Date();
+      console.log("startDate in getSeconds", this.startDate.getSeconds())
 
+      this.interval = setInterval(element => {
+        const currentDate = new Date()
+
+        this.timePassed = currentDate.getTime() - this.startDate.getTime();
+      }, 1000)
     },
-    onPauseTimer () {
-      console.log('Pause')
+    pauseTimer() {
+      clearInterval(this.interval)
     },
   },
 }
@@ -124,14 +163,14 @@ export default {
   background-color: #01d00f
 }
 
-.btn-stop {
+.btn-pause {
   background-color: transparent;
-  border: 1px solid #fc5c65;
-  color: #fc5c65;
+  border: 1px solid #402caf;
+  color: #402caf;
 }
 
-.btn-stop:hover {
-  background-color: #fc5c65;
+.btn-pause:hover {
+  background-color: #402caf;
   color: #FFFFFF;
   border: none
 }
