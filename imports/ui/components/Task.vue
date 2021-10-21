@@ -15,7 +15,7 @@
     <div class="actions">
       <div class="timer">
         <span v-if="timePassed !== null">{{ formattedTime }} </span>
-        <span v-else>{{ "00:00:00"  }}</span>
+        <span v-else>{{ "00:00:00" }}</span>
       </div>
 
       <button
@@ -49,8 +49,6 @@ export default {
   props: ['task'],
   data() {
     return {
-      startTimeTracker: '',
-      pauseTimeTracker: '',
       timerTask: '',
       startDate: null,
       timePassed: null,
@@ -62,8 +60,8 @@ export default {
       return this.task.checked ? 'checked' : ''
     },
     formattedTime: function () {
+      let durationTask
       if (this.timePassed) {
-        let durationTask = 0
         durationTask = Math.abs((this.timePassed / 1000).toFixed(0))
         let hours = Math.floor(durationTask / 3600) % 24
         hours = (hours < 10) ? "0" + hours : hours
@@ -94,20 +92,38 @@ export default {
     deleteThisTask() {
       TasksCollection.remove(this.task._id)
     },
-    startTimer() {
-      console.log('startTimer')
-      this.startDate = new Date();
-      console.log("startDate in getSeconds", this.startDate.getSeconds())
-
-      this.interval = setInterval(element => {
-        const currentDate = new Date()
-
-        this.timePassed = currentDate.getTime() - this.startDate.getTime();
-      }, 1000)
-    },
+    // startTimer() {
+    //   this.startDate = new Date();
+    //   console.log("startDate in getSeconds", this.startDate)
+    //
+    //   this.interval = setInterval(element => {
+    //     const currentDate = new Date()
+    //
+    //     if(this.timePassed) {
+    //       console.log("if")
+    //       this.timePassed = this.timePassed + currentDate.getTime() - this.startDate.getTime();
+    //     }
+    //
+    //     this.timePassed = currentDate.getTime() - this.startDate.getTime();
+    //
+    //   }, 1000)
+    // },
     pauseTimer() {
       clearInterval(this.interval)
     },
+    startTimer() {
+      if(this.startDate) {
+        let start = new Date().getTime() - this.timePassed
+        this.startDate = new Date(start)
+      } else {
+        this.startDate = new Date()
+      }
+      this.interval = setInterval(() => {
+        let currentDate = new Date()
+        this.timePassed = currentDate.getTime() - this.startDate.getTime()
+      }, 1000)
+    },
+
   },
 }
 </script>
